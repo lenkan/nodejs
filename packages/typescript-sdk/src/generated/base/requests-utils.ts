@@ -1,5 +1,6 @@
-import { Middleware, MiddlewareArg, ClientResponse } from './common-types'
+import { Middleware, MiddlewareArg, ClientResponse, VariableMap } from './common-types'
 import { CommonRequest } from './local-common-types'
+import { stringify } from 'querystring'
 
 export class ApiRequestExecutor {
   private middleware: Middleware
@@ -68,23 +69,10 @@ function getURI(commonRequest: CommonRequest): string {
   const pathMap = commonRequest.pathVariables
   const queryMap = commonRequest.queryParams
   var uri: String = commonRequest.uriTemplate
-  var queryParams: string[] = []
   for (const param in pathMap) {
     uri = uri.replace(`{${param}}`, `${pathMap[param]}`)
   }
-  for (const query in queryMap) {
-    const queryParameter = queryMap[query]
-    if (queryParameter instanceof Array) {
-      for (const element in queryParameter) {
-        queryParams.push(
-          `${query}=${encodeURIComponent(`${queryParameter[element]}`)}`
-        )
-      }
-    } else {
-      queryParams.push(`${query}=${encodeURIComponent(`${queryParameter}`)}`)
-    }
-  }
-  const resQuery = queryParams.join('&')
+  const resQuery = queryMap ? stringify(queryMap) : ''
   if (resQuery == '') {
     return `${commonRequest.baseURL}${uri}`
   }
